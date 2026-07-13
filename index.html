@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Para ti, Ame</title>
+<style>
+  :root{
+    --amarillo:#F4C430;
+    --amarillo-texto:#241a00;
+    --negro:#0b0b0b;
+    --dorado:#F0B93A;
+    --purpura-luz:#8717A9;
+    --lavanda:#C9A6E0;
+    --lavanda-texto:#2a1533;
+    --cyan-texto:#BDEFF2;
+    --rojo:#B3161C;
+    --marfil:#f5efe4;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%; margin:0; overflow:hidden;}
+  body{
+    font-family:"Georgia","Iowan Old Style", serif;
+    background:#000;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001s !important; transition-duration:0.001s !important;}
+  }
+
+  .phone{
+    position:relative;
+    width:100%;
+    max-width:460px;
+    height:100dvh;
+    max-height:960px;
+    overflow:hidden;
+    background:#000;
+    box-shadow:0 0 60px rgba(0,0,0,.6);
+  }
+
+  /* ---------- progress bars (order guide — no numbers shown) ---------- */
+  .progress{
+    position:absolute;
+    top:calc(14px + env(safe-area-inset-top));
+    left:14px; right:14px;
+    display:flex;
+    gap:6px;
+    z-index:50;
+  }
+  .progress .seg{
+    flex:1;
+    height:3px;
+    border-radius:3px;
+    background:rgba(255,255,255,.3);
+    overflow:hidden;
+  }
+  .progress .seg i{
+    display:block; height:100%; width:0%;
+    background:rgba(255,255,255,.95);
+    transition:width .25s linear;
+  }
+  .progress .seg.done i{width:100%;}
+
+  /* ---------- screens ---------- */
+  .screen{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    justify-content:center; align-items:center;
+    padding:70px 28px 50px;
+    text-align:center;
+    opacity:0; visibility:hidden;
+    transform:scale(1.02);
+    transition:opacity .5s ease, transform .5s ease, visibility 0s linear .5s;
+    overflow:hidden;
+  }
+  .screen.active{
+    opacity:1; visibility:visible; transform:scale(1);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+
+  .tap-zone{position:absolute; inset:0; z-index:5;}
+
+  /* ---------- SCREEN 1 : negro ---------- */
+  #s1{background:radial-gradient(circle at 50% 30%, #151515 0%, #000 70%);}
+  #s1 .titulo{
+    font-size:1.7rem;
+    color:var(--dorado);
+    letter-spacing:.02em;
+    font-style:italic;
+    opacity:0;
+    animation: aparecer 1.4s ease forwards .3s;
+  }
+  #s1 .marca{
+    position:absolute; top:44%; left:50%; transform:translate(-50%,-50%);
+    width:34px; height:34px;
+    border:1px solid rgba(240,185,58,.5);
+    border-radius:50%;
+    opacity:0;
+    animation: aparecer 1.4s ease forwards 1s;
+  }
+  #s1 .marca::before{
+    content:"";
+    position:absolute; inset:9px;
+    border-radius:50%;
+    background:var(--dorado);
+    box-shadow:0 0 18px 4px rgba(240,185,58,.6);
+  }
+  .btn-amarillo{
+    z-index:20;
+    margin-top:auto;
+    background:var(--amarillo);
+    color:var(--amarillo-texto);
+    border:none;
+    font-family:inherit;
+    font-weight:700;
+    letter-spacing:.03em;
+    font-size:1rem;
+    padding:15px 34px;
+    border-radius:999px;
+    box-shadow:0 6px 22px rgba(244,196,48,.35);
+    opacity:0;
+    animation: aparecer 1s ease forwards 1.6s;
+  }
+  .btn-amarillo:active{transform:scale(.96);}
+
+  @keyframes aparecer{ to{opacity:1;} }
+
+  /* ---------- SCREEN 2 & 4 : imagen de fondo completa ---------- */
+  .screen-imagen{ padding:0; justify-content:flex-end; align-items:stretch; }
+  .fondo-media{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    object-position:center;
+    z-index:1;
+  }
+  .velo{
+    position:absolute; inset:0;
+    z-index:2;
+    background:linear-gradient(to top,
+      rgba(0,0,0,.72) 0%,
+      rgba(0,0,0,.42) 32%,
+      rgba(0,0,0,.05) 58%,
+      rgba(0,0,0,0) 72%);
+  }
+  .contenido-media{
+    position:relative;
+    z-index:3;
+    padding:28px 26px calc(46px + env(safe-area-inset-bottom));
+    text-align:center;
+  }
+  .texto-media{
+    color:var(--marfil);
+    font-size:1.02rem;
+    line-height:1.6;
+    white-space:pre-line;
+    text-shadow:0 2px 10px rgba(0,0,0,.55);
+  }
+  #s2 .texto-media{ font-style:italic; }
+  .final-frase{
+    margin-top:14px;
+    font-size:1.2rem;
+    font-style:italic;
+    color:var(--dorado);
+    text-shadow:0 2px 10px rgba(0,0,0,.6);
+  }
+
+  /* botón oculto tipo easter egg: casi invisible, pero con un leve brillo que respira */
+  .huevo-de-pascua{
+    position:absolute;
+    width:58px; height:58px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.32) 0%, rgba(255,255,255,.08) 55%, rgba(255,255,255,0) 75%);
+    border:none;
+    z-index:8;
+    animation: respirar 2.6s ease-in-out infinite;
+  }
+  @keyframes respirar{
+    0%,100%{ opacity:.35; transform:scale(.9); }
+    50%{ opacity:.85; transform:scale(1.08); }
+  }
+
+  /* ---------- SCREEN 3 : negro con luciérnagas moradas ---------- */
+  #s3{
+    background:#050505;
+    justify-content:flex-start;
+    padding-top:120px;
+  }
+  .fireflies{position:absolute; inset:0; overflow:hidden;}
+  .firefly{
+    position:absolute;
+    width:5px; height:5px;
+    border-radius:50%;
+    background:var(--purpura-luz);
+    box-shadow:0 0 8px 3px var(--purpura-luz), 0 0 16px 6px rgba(135,23,169,.5);
+    animation-name: flotar, titilar;
+    animation-timing-function: ease-in-out, ease-in-out;
+    animation-iteration-count: infinite, infinite;
+  }
+  @keyframes flotar{
+    0%{ transform: translate(0,0); }
+    50%{ transform: translate(var(--dx), var(--dy)); }
+    100%{ transform: translate(0,0); }
+  }
+  @keyframes titilar{
+    0%,100%{ opacity:.15; }
+    50%{ opacity:1; }
+  }
+  #s3 .texto-luz{
+    position:relative; z-index:10;
+    color:var(--cyan-texto);
+    font-size:1.03rem;
+    line-height:1.7;
+    text-shadow:0 0 14px rgba(135,23,169,.5);
+  }
+  .btn-continuar{
+    position:relative; z-index:20;
+    margin-top:34px;
+    background:var(--lavanda);
+    color:var(--lavanda-texto);
+    border:none;
+    font-family:inherit;
+    font-weight:700;
+    font-size:.95rem;
+    letter-spacing:.02em;
+    padding:13px 28px;
+    border-radius:999px;
+    box-shadow:0 0 20px rgba(201,166,224,.55);
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .6s ease, transform .6s ease;
+    pointer-events:none;
+  }
+  .btn-continuar.mostrar{
+    opacity:1; transform:translateY(0);
+    pointer-events:auto;
+  }
+
+  /* ---------- SCREEN 5 : rojo, video de fondo completo ---------- */
+  #s5.screen-imagen{ background:var(--rojo); }
+  #s5 .velo{
+    background:linear-gradient(to top,
+      rgba(60,4,6,.82) 0%,
+      rgba(60,4,6,.48) 30%,
+      rgba(60,4,6,.05) 58%,
+      rgba(60,4,6,0) 74%);
+  }
+  #s5 .eyebrow{
+    color:#ffd9d9;
+    font-size:.76rem;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    margin-bottom:10px;
+    opacity:.9;
+  }
+  #s5 .texto-media{ color:var(--marfil); }
+  #s5 .restriccion{
+    margin-top:12px;
+    font-size:.8rem;
+    color:#ffb9b9;
+    letter-spacing:.02em;
+  }
+  .sonido-btn{
+    position:absolute;
+    top:calc(18px + env(safe-area-inset-top));
+    right:16px;
+    z-index:9;
+    width:38px; height:38px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.5);
+    background:rgba(0,0,0,.35);
+    color:#fff;
+    font-size:.95rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .flecha{
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+    font-size:.72rem; letter-spacing:.15em; text-transform:uppercase;
+    color:rgba(255,255,255,.75);
+    z-index:6;
+    animation: subir 1.8s ease-in-out infinite;
+    text-shadow:0 2px 8px rgba(0,0,0,.6);
+  }
+  @keyframes subir{
+    0%,100%{opacity:.4; transform:translate(-50%,0);}
+    50%{opacity:1; transform:translate(-50%,-6px);}
+  }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+
+  <div class="progress" id="progress"></div>
+
+  <!-- SCREEN 1 -->
+  <section class="screen active" id="s1">
+    <div class="tap-zone" data-next></div>
+    <div class="titulo">Espero te guste</div>
+    <div class="marca"></div>
+    <button class="btn-amarillo" data-next>Para ti Ame</button>
+  </section>
+
+  <!-- SCREEN 2 : imagen de fondo -->
+  <section class="screen screen-imagen" id="s2">
+    <img class="fondo-media" src="img-verde-2.png" alt="">
+    <div class="velo"></div>
+    <div class="tap-zone" data-next></div>
+    <div class="contenido-media">
+      <p class="texto-media">Ame, pocas veces me imaginé esto y quiero expresártelo, de una manera en la que se&hellip;
+
+Esto sigue&hellip;
+
+Llevo poco tiempo de conocerte y en ese tiempo me pude dar cuenta de lo increíble persona que eres. Mi amor por ti se despertó pronto, quizá fue suerte o coincidencia.</p>
+    </div>
+    <div class="flecha">toca para seguir</div>
+  </section>
+
+  <!-- SCREEN 3 -->
+  <section class="screen" id="s3">
+    <div class="fireflies" id="fireflies"></div>
+    <p class="texto-luz">Qué lindo fue conocerte. El saber quién eras, más allá de lo que me contaban amigos y profes, fue algo revelador y cautivador. Eres un ser tan lindo, adorable e inteligente que me sigue costando entender el lugar que tengo.
+
+Me cautivó tu simpleza, gusto por el arte y quien eres. Descubrí que eres más que mi rival en clases de dibujo, eres una persona que podía llegar a amar y no arrepentirme.
+
+Genuinamente tenía miedo, no quize perderte, así que hice algo de lo que no me arrepiento. Esa petición fue algo más que solo palabras; mi amor por ti quedó claro y magnificado.
+
+Ame, no puedo decir otra cosa más que Te amo. Eres la mujer más linda que conozco, me siento muy feliz de ser tu novio.</p>
+    <button class="btn-continuar" id="btnContinuar">Ya casi termino</button>
+  </section>
+
+  <!-- SCREEN 4 : imagen de fondo -->
+  <section class="screen screen-imagen" id="s4">
+    <img class="fondo-media" src="img-verde-4.jpg" alt="">
+    <div class="velo"></div>
+    <div class="tap-zone"></div>
+    <div class="contenido-media">
+      <p class="texto-media">Ame, te mereces todo lo que tú quieras. Me veo limitado, y si fuera por mí te daba todo un universo de cosas. Quisiera ver por siempre el universo que guardan tus ojos, sentir el calor que derrama tu cuerpo, y dormir sobre tu suave y reconfortante cuerpo. Eres una mujer hermosa, tan linda como la luna y las estrellas; no tengo las suficientes palabras para terminar de describir lo mucho que te quiero y que te voy a seguir amando.</p>
+      <p class="final-frase">Te amo, América. Eres muchísimo para mí &lt;3</p>
+    </div>
+    <button class="huevo-de-pascua" id="huevo" aria-label=""></button>
+  </section>
+
+  <!-- SCREEN 5 (easter egg) : video de fondo -->
+  <section class="screen screen-imagen" id="s5">
+    <video class="fondo-media" id="videoFondo" src="video-easter-egg.mp4" playsinline muted loop></video>
+    <div class="velo"></div>
+    <button class="sonido-btn" id="btnSonido">🔇</button>
+    <div class="tap-zone" id="tapVideo"></div>
+    <div class="contenido-media">
+      <div class="eyebrow">encontraste algo</div>
+      <p class="texto-media">Nmms, descubriste un easter egg (⌐'□')⌐
+
+Válido por una comida o lo que quieras hacerme.</p>
+      <p class="restriccion">*Aplica restricciones (la noche no)</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  const order = ['s1','s2','s3','s4'];       // ventanas visibles en el progreso
+  let current = 0;
+  const screens = {};
+  order.concat(['s5']).forEach(id => screens[id] = document.getElementById(id));
+
+  // ---- barra de progreso ----
+  const progressEl = document.getElementById('progress');
+  order.forEach(()=> {
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    seg.innerHTML = '<i></i>';
+    progressEl.appendChild(seg);
+  });
+  const segs = progressEl.querySelectorAll('.seg');
+
+  function updateProgress(){
+    segs.forEach((seg,i)=>{
+      seg.classList.toggle('done', i < current);
+      const bar = seg.querySelector('i');
+      bar.style.width = i < current ? '100%' : '0%';
+    });
+  }
+
+  function showScreen(id){
+    Object.values(screens).forEach(s=>s.classList.remove('active'));
+    screens[id].classList.add('active');
+  }
+
+  function goTo(index){
+    if(index < 0 || index >= order.length) return;
+    current = index;
+    updateProgress();
+    showScreen(order[current]);
+    if(order[current] === 's3') startScreen3();
+  }
+
+  function next(){ goTo(current+1); }
+
+  document.querySelectorAll('[data-next]').forEach(el=>{
+    el.addEventListener('click', next);
+  });
+
+  // ---- pantalla 3: luciérnagas + botón con retraso ----
+  let s3Started = false;
+  function startScreen3(){
+    if(s3Started) return;
+    s3Started = true;
+    const field = document.getElementById('fireflies');
+    const n = 34;
+    for(let i=0;i<n;i++){
+      const f = document.createElement('div');
+      f.className = 'firefly';
+      const top = Math.random()*100;
+      const left = Math.random()*100;
+      const dx = (Math.random()*60-30).toFixed(0)+'px';
+      const dy = (Math.random()*60-30).toFixed(0)+'px';
+      const dur1 = (5+Math.random()*6).toFixed(1)+'s';
+      const dur2 = (2+Math.random()*3).toFixed(1)+'s';
+      const delay = (Math.random()*4).toFixed(1)+'s';
+      f.style.top = top+'%';
+      f.style.left = left+'%';
+      f.style.setProperty('--dx', dx);
+      f.style.setProperty('--dy', dy);
+      f.style.animationDuration = dur1+', '+dur2;
+      f.style.animationDelay = delay+', '+delay;
+      field.appendChild(f);
+    }
+    setTimeout(()=>{
+      const btn = document.getElementById('btnContinuar');
+      btn.classList.add('mostrar');
+    }, 5000);
+  }
+  document.getElementById('btnContinuar').addEventListener('click', next);
+
+  // ---- pantalla 4: botón oculto tipo easter egg ----
+  const huevo = document.getElementById('huevo');
+  function colocarHuevo(){
+    const top = 16 + Math.random()*40; // zona alta/media de la foto, lejos del texto
+    const left = 10 + Math.random()*78;
+    huevo.style.top = top+'%';
+    huevo.style.left = left+'%';
+  }
+  colocarHuevo();
+  huevo.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    showScreen('s5');
+    const vid = document.getElementById('videoFondo');
+    vid.currentTime = 0;
+    vid.muted = true;
+    btnSonido.textContent = '🔇';
+    vid.play().catch(()=>{});
+  });
+
+  // ---- pantalla 5: video de fondo, tocar reproduce/pausa, botón controla sonido ----
+  const videoFondo = document.getElementById('videoFondo');
+  const btnSonido = document.getElementById('btnSonido');
+  document.getElementById('tapVideo').addEventListener('click', ()=>{
+    if(videoFondo.paused){ videoFondo.play().catch(()=>{}); }
+    else{ videoFondo.pause(); }
+  });
+  btnSonido.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    videoFondo.muted = !videoFondo.muted;
+    btnSonido.textContent = videoFondo.muted ? '🔇' : '🔊';
+  });
+
+  updateProgress();
+})();
+</script>
+
+</body>
+</html>
